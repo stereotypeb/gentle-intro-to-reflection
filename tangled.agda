@@ -1,10 +1,11 @@
 module tangled where
 
 import Level as Level
-open import Reflection hiding (_≟_ ; name)
+open import Reflection  hiding (_≟_ ; name)
 open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Unary using (Decidable)
 open import Relation.Nullary
+-- Agda.Builtin.Reflection.Relevance !=<
 
 open import Data.Unit
 open import Data.Nat  as Nat hiding (_⊓_)
@@ -65,21 +66,21 @@ _ = refl
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*~Arg~%20%E2%94%80Type%20of%20arguments][~Arg~ ─Type of arguments:1]] -}
 {- 𝓋isible 𝓇elevant 𝒶rgument -}
 𝓋𝓇𝒶 : {A : Set} → A → Arg A
-𝓋𝓇𝒶 = arg (arg-info visible relevant)
+𝓋𝓇𝒶 = arg (arg-info visible (modality ? ?))
 
 {- 𝒽idden 𝓇elevant 𝒶rgument -}
 𝒽𝓇𝒶 : {A : Set} → A → Arg A
-𝒽𝓇𝒶 = arg (arg-info hidden relevant)
+𝒽𝓇𝒶 = arg (arg-info hidden (modality ? ?))
 {- ~Arg~ ─Type of arguments:1 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*~Arg~%20%E2%94%80Type%20of%20arguments][~Arg~ ─Type of arguments:2]] -}
 {- 𝓋isible 𝓇elevant 𝓋ariable -}
 𝓋𝓇𝓋 : (debruijn : ℕ) (args : List (Arg Term)) → Arg Term
-𝓋𝓇𝓋 n args = arg (arg-info visible relevant) (var n args)
+𝓋𝓇𝓋 n args = arg (arg-info visible (modality relevant ?)) (var n args)
 
 {- 𝒽idden 𝓇elevant 𝓋ariable -}
 𝒽𝓇𝓋 : (debruijn : ℕ) (args : List (Arg Term)) → Arg Term
-𝒽𝓇𝓋 n args = arg (arg-info hidden relevant) (var n args)
+𝒽𝓇𝓋 n args = arg (arg-info hidden (modality relevant ?)) (var n args)
 {- ~Arg~ ─Type of arguments:2 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Example:%20Simple%20Types][Example: Simple Types:1]] -}
@@ -101,7 +102,7 @@ _ : quoteTerm 1 ≡ lit (nat 1)
 _ = refl
 
 _ :    quoteTerm (suc zero)
-     ≡ con (quote suc) (arg (arg-info visible relevant) (quoteTerm zero) ∷ [])
+     ≡ con (quote suc) (arg (arg-info visible (modality relevant ?)) (quoteTerm zero) ∷ [])
 _ = refl
 
 {- Using our helper 𝓋𝓇𝒶 -}
@@ -177,7 +178,7 @@ _ = refl
 _ : quoteTerm (λ (a : ℕ) (f : ℕ → ℕ) → f a)
     ≡  lam visible (abs "a"
          (lam visible (abs "f"
-           (var 0 (arg (arg-info visible relevant) (var 1 []) ∷ [])))))
+           (var 0 (arg (arg-info visible (modality relevant ?)) (var 1 []) ∷ [])))))
 _ = refl
 {- Example: Lambda Terms:5 ends here -}
 
@@ -223,11 +224,11 @@ _ = refl
 {- Example: Lambda Terms:9 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Metaprogramming%20with%20The%20Typechecking%20Monad%20~TC~][Metaprogramming with The Typechecking Monad ~TC~:1]] -}
-_>>=_        : ∀ {a b} {A : Set a} {B : Set b} → TC A → (A → TC B) → TC B
-_>>=_ = bindTC
+-- _>>=_        : ∀ {a b} {A : Set a} {B : Set b} → TC A → (A → TC B) → TC B
+-- _>>=_ = bindTC
 
-_>>_        : ∀ {a b} {A : Set a} {B : Set b} → TC A → TC B → TC B
-_>>_  = λ p q → p >>= (λ _ → q)
+-- _>>_        : ∀ {a b} {A : Set a} {B : Set b} → TC A → TC B → TC B
+-- _>>_  = λ p q → p >>= (λ _ → q)
 {- Metaprogramming with The Typechecking Monad ~TC~:1 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Unquoting%20%E2%94%80Making%20new%20functions%20&%20types][Unquoting ─Making new functions & types:1]] -}
@@ -242,10 +243,10 @@ _>>_  = λ p q → p >>= (λ _ → q)
 {- Unquoting ─Making new functions & types:1 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Unquoting%20%E2%94%80Making%20new%20functions%20&%20types][Unquoting ─Making new functions & types:2]] -}
-unquoteDecl IsRed =
+unquoteDecl IsRed = 
   do ty ← quoteTC (RGB → Set)
      declareDef (𝓋𝓇𝒶 IsRed) ty
-     defineFun IsRed   [ clause [ 𝓋𝓇𝒶 (var "x") ] (def (quote _≡_) (“ℓ₀” ∷ “RGB” ∷ “Red” ∷ 𝓋𝓇𝓋 0 [] ∷ [])) ]
+     defineFun IsRed   [ Clause.clause [ ?  ] ?  ? ] -- [ 𝓋𝓇𝒶 (var "x") ] (def (quote _≡_) (“ℓ₀” ∷ “RGB” ∷ “Red” ∷ 𝓋𝓇𝓋 0 [] ∷ [])) ]
 {- Unquoting ─Making new functions & types:2 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Unquoting%20%E2%94%80Making%20new%20functions%20&%20types][Unquoting ─Making new functions & types:3]] -}
@@ -262,17 +263,17 @@ red-is-the-only-solution refl = refl
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Unquoting%20%E2%94%80Making%20new%20functions%20&%20types][Unquoting ─Making new functions & types:4]] -}
 {- Definition stage, we can use ‘?’ as we form this program. -}
 define-Is : Name → Name → TC ⊤
-define-Is is-name qcolour = defineFun is-name
-  [ clause [ 𝓋𝓇𝒶 (var "x") ] (def (quote _≡_) (“ℓ₀” ∷ “RGB” ∷ 𝓋𝓇𝒶 (con qcolour []) ∷ 𝓋𝓇𝓋 0 [] ∷ [])) ]
+define-Is is-name qcolour = ? -- defineFun is-name
+  -- [ clause [ 𝓋𝓇𝒶 (var "x") ] (def (quote _≡_) (“ℓ₀” ∷ “RGB” ∷ 𝓋𝓇𝒶 (con qcolour []) ∷ 𝓋𝓇𝓋 0 [] ∷ [])) ]
 
 declare-Is : Name → Name → TC ⊤
-declare-Is is-name qcolour =
-  do let η = is-name
-     τ ← quoteTC (RGB → Set)
-     declareDef (𝓋𝓇𝒶 η) τ
-     defineFun is-name
-       [ clause [ 𝓋𝓇𝒶 (var "x") ]
-         (def (quote _≡_) (“ℓ₀” ∷ “RGB” ∷ 𝓋𝓇𝒶 (con qcolour []) ∷ 𝓋𝓇𝓋 0 [] ∷ [])) ]
+declare-Is is-name qcolour = ?
+  -- do let η = is-name
+  --    τ ← quoteTC (RGB → Set)
+  --    declareDef (𝓋𝓇𝒶 η) τ
+  --    defineFun is-name
+  --      [ clause [ 𝓋𝓇𝒶 (var "x") ]
+  --        (def (quote _≡_) (“ℓ₀” ∷ “RGB” ∷ 𝓋𝓇𝒶 (con qcolour []) ∷ 𝓋𝓇𝓋 0 [] ∷ [])) ]
 
 {- Unquotation stage -}
 IsRed′ : RGB → Set
@@ -294,11 +295,12 @@ disjoint-rgb (refl , ())
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Unquoting%20%E2%94%80Making%20new%20functions%20&%20types][Unquoting ─Making new functions & types:6]] -}
 unquoteDecl {- identity -}
-  = do {- let η = identity -}
-       η ← freshName "identity"
-       τ ← quoteTC (∀ {A : Set} → A → A)
-       declareDef (𝓋𝓇𝒶 η) τ
-       defineFun η [ clause [ 𝓋𝓇𝒶 (var "x") ] (var 0 []) ]
+  = ?
+  -- do {- let η = identity -}
+  --      η ← freshName "identity"
+  --      τ ← quoteTC (∀ {A : Set} → A → A)
+  --      declareDef (𝓋𝓇𝒶 η) τ
+  --      defineFun η [ clause [ 𝓋𝓇𝒶 (var "x") ] (var 0 []) ]
 
 {- “identity” is not in scope!?
 _ : ∀ {x : ℕ}  →  identity x  ≡  x
@@ -309,10 +311,10 @@ _ = refl
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Unquoting%20%E2%94%80Making%20new%20functions%20&%20types][Unquoting ─Making new functions & types:7]] -}
 {- Exercise: -}
 unquoteDecl everywhere-0
-  = do let η = everywhere-0
-       τ ← quoteTC (ℕ → ℕ)
-       declareDef (𝓋𝓇𝒶 η) τ
-       defineFun η [ clause [ 𝓋𝓇𝒶 (var "x") ] (con (quote zero) []) ]
+  = ? -- do let η = everywhere-0
+      --  τ ← quoteTC (ℕ → ℕ)
+      --  declareDef (𝓋𝓇𝒶 η) τ
+      --  defineFun η [ clause [ 𝓋𝓇𝒶 (var "x") ] (con (quote zero) []) ]
 
 _ : everywhere-0 3 ≡ 0
 _ = refl
@@ -320,10 +322,10 @@ _ = refl
 
 {- Exercise: -}
 unquoteDecl K
-  = do let η = K
-       τ ← quoteTC ({A B : Set} → A → B → A)
-       declareDef (𝓋𝓇𝒶 η) τ
-       defineFun η [ clause (𝓋𝓇𝒶 (var "x") ∷ 𝓋𝓇𝒶 (var "y") ∷ []) (var 1 []) ]
+  = ? -- do let η = K
+     --   τ ← quoteTC ({A B : Set} → A → B → A)
+     --   declareDef (𝓋𝓇𝒶 η) τ
+     --   defineFun η [ clause (𝓋𝓇𝒶 (var "x") ∷ 𝓋𝓇𝒶 (var "y") ∷ []) (var 1 []) ]
 
 _ : K 3 "cat" ≡ 3
 _ = refl
@@ -331,11 +333,11 @@ _ = refl
 
 {- Exercise: -}
 declare-unique : Name → (RGB → Set) → RGB → TC ⊤
-declare-unique it S colour =
-  do let η = it
-     τ ← quoteTC (∀ {c} → S c → c ≡ colour)
-     declareDef (𝓋𝓇𝒶 η) τ
-     defineFun η [ clause [ 𝓋𝓇𝒶 (con (quote refl) []) ] (con (quote refl) []) ]
+declare-unique it S colour = ?
+  -- do let η = it
+  --    τ ← quoteTC (∀ {c} → S c → c ≡ colour)
+  --    declareDef (𝓋𝓇𝒶 η) τ
+  --    defineFun η [ clause [ 𝓋𝓇𝒶 (con (quote refl) []) ] (con (quote refl) []) ]
 
 unquoteDecl red-unique = declare-unique red-unique IsRed Red
 unquoteDecl green-unique = declare-unique green-unique IsGreen Green
@@ -377,14 +379,14 @@ constructors _ = []
 
 by-refls : Name → Term → TC ⊤
 by-refls nom thm-you-hope-is-provable-by-refls
- = let mk-cls : Name → Clause
-       mk-cls qcolour = clause [ 𝒽𝓇𝒶 (con qcolour []) ] (con (quote refl) [])
-   in
-   do let η = nom
-      δ ← getDefinition (quote RGB)
-      let clauses = List.map mk-cls (constructors δ)
-      declareDef (𝓋𝓇𝒶 η) thm-you-hope-is-provable-by-refls
-      defineFun η clauses
+ = ? -- let mk-cls : Name → Clause
+   --     mk-cls qcolour = clause [ 𝒽𝓇𝒶 (con qcolour []) ] (con (quote refl) [])
+   -- in
+   -- do let η = nom
+   --    δ ← getDefinition (quote RGB)
+   --    let clauses = List.map mk-cls (constructors δ)
+   --    declareDef (𝓋𝓇𝒶 η) thm-you-hope-is-provable-by-refls
+   --    defineFun η clauses
 {- Sidequest: Avoid tedious ~refl~ proofs:3 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Sidequest:%20Avoid%20tedious%20~refl~%20proofs][Sidequest: Avoid tedious ~refl~ proofs:4]] -}
@@ -488,13 +490,13 @@ _ = foldn _ refl (λ _ → cong suc)    {- No change, same proof as previous -}
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Tedious%20Repetitive%20Proofs%20No%20More!][Tedious Repetitive Proofs No More!:4]] -}
 make-rid : (let A = ℕ) (_⊕_ : A → A → A) (e : A) → Name → TC ⊤
 make-rid _⊕_ e nom
- = do let η = nom
-      let clauses =   clause [ 𝒽𝓇𝒶 (con (quote zero) []) ] (con (quote refl) [])
-                    ∷ clause [ 𝒽𝓇𝒶 (con (quote suc)  [ 𝓋𝓇𝒶 (var "n") ]) ]
-                             (def (quote cong) (𝓋𝓇𝒶 (quoteTerm suc) ∷ 𝓋𝓇𝒶 (def nom []) ∷ [])) ∷ []
-      τ ← quoteTC (∀{x : ℕ} → x ⊕ e ≡ x)
-      declareDef (𝓋𝓇𝒶 η) τ
-      defineFun η clauses
+ = ? -- do let η = nom
+     --  let clauses =   clause [ 𝒽𝓇𝒶 (con (quote zero) []) ] (con (quote refl) [])
+     --                ∷ clause [ 𝒽𝓇𝒶 (con (quote suc)  [ 𝓋𝓇𝒶 (var "n") ]) ]
+     --                         (def (quote cong) (𝓋𝓇𝒶 (quoteTerm suc) ∷ 𝓋𝓇𝒶 (def nom []) ∷ [])) ∷ []
+     --  τ ← quoteTC (∀{x : ℕ} → x ⊕ e ≡ x)
+     --  declareDef (𝓋𝓇𝒶 η) τ
+     --  defineFun η clauses
 
 _ : ∀{x : ℕ} → x + 0 ≡ x
 _ = nice where unquoteDecl nice = make-rid _+_ 0 nice
@@ -526,26 +528,27 @@ _ = _^_ trivially-has-rid 1
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Tedious%20Repetitive%20Proofs%20No%20More!][Tedious Repetitive Proofs No More!:7]] -}
 +-rid′ : ∀{n} → n + 0 ≡ n
 +-rid′ {zero}  = refl
-+-rid′ {suc n} = quoteGoal e in
-  let
-    suc-n : Term
-    suc-n = con (quote suc) [ 𝓋𝓇𝒶 (var 0 []) ]
++-rid′ {suc n} = ?
+  -- quoteGoal e in
+  -- let
+  --   suc-n : Term
+  --   suc-n = con (quote suc) [ 𝓋𝓇𝒶 (var 0 []) ]
 
-    lhs : Term
-    lhs = def (quote _+_) (𝓋𝓇𝒶 suc-n ∷ 𝓋𝓇𝒶 (lit (nat 0)) ∷ [])
+  --   lhs : Term
+  --   lhs = def (quote _+_) (𝓋𝓇𝒶 suc-n ∷ 𝓋𝓇𝒶 (lit (nat 0)) ∷ [])
 
-    {- Check our understanding of what the goal is “e”. -}
-    _ : e ≡ def (quote _≡_)
-                 (𝒽𝓇𝒶 (quoteTerm Level.zero) ∷ 𝒽𝓇𝒶 (quoteTerm ℕ)
-                 ∷ 𝓋𝓇𝒶 lhs ∷ 𝓋𝓇𝒶 suc-n ∷ [])
-    _ = refl
+  --   {- Check our understanding of what the goal is “e”. -}
+  --   _ : e ≡ def (quote _≡_)
+  --                (𝒽𝓇𝒶 (quoteTerm Level.zero) ∷ 𝒽𝓇𝒶 (quoteTerm ℕ)
+  --                ∷ 𝓋𝓇𝒶 lhs ∷ 𝓋𝓇𝒶 suc-n ∷ [])
+  --   _ = refl
 
-    {- What does it look normalised. -}
-    _ :   quoteTerm (suc (n + 0) ≡ n)
-         ≡ unquote λ goal → (do g ← normalise goal; unify g goal)
-    _ = refl
-  in
-  cong suc +-rid′
+  --   {- What does it look normalised. -}
+  --   _ :   quoteTerm (suc (n + 0) ≡ n)
+  --        ≡ unquote λ goal → (do g ← normalise goal; unify g goal)
+  --   _ = refl
+  -- in
+  -- cong suc +-rid′
 {- Tedious Repetitive Proofs No More!:7 ends here -}
 
 {- [[file:~/reflection/gentle-intro-to-reflection.lagda::*Our%20First%20Real%20Proof%20Tactic][Our First Real Proof Tactic:1]] -}

@@ -1,0 +1,3 @@
+name: tangled
+depend: standard-library
+include: .
